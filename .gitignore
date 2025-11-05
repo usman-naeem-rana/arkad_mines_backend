@@ -1,0 +1,44 @@
+# Node modules
+node_modules/
+
+# Environment files
+.env
+config.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+.DS_Store
+*.swp
+*.swo
+*.tmp
+
+# Vercel / deployment
+.vercel
+.vercel_build_output/
+
+# Uploads (if storing locally)
+uploads/
+
+# Cache / lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# IDE / editor configs
+.vscode/
+.idea/
+*.iml
+
+# OS files
+Thumbs.db
+desktop.ini
