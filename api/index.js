@@ -1,3 +1,4 @@
+// api/index.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -10,29 +11,46 @@ dotenv.config({ path: "./config.env" });
 
 const app = express();
 
-// Middlewares
+/* ---------------- CORS must be FIRST ---------------- */
+app.use(cors({
+  origin: "*", // allow all for now; restrict later if needed
+  methods: ["GET","POST","PUT","DELETE","PATCH","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
+}));
+app.options("*", cors());
+
+/* --------------- Body parsing ---------------- */
 app.use(express.json());
-app.use(cors());
 
-// ⚠️ Vercel is serverless; connect once at cold start
-// Avoid top-level await; just call connect and ignore if already connected
-connectDB().catch((e) => console.error("DB connect error:", e));
+/* --------------- DB connect (serverless cold start) --------------- */
+connectDB().catch(e => console.error("DB connect error:", e));
 
-// Static (note: ephemeral on Vercel)
+/* --------------- Static (ephemeral on Vercel) --------------- */
 app.use("/images", express.static("uploads"));
 
-// Routes
+/* --------------- Routes --------------- */
 app.use("/api/user", userRouter);
 app.use("/api", adminRouter);
 app.use("/api/stones", stonesRouter);
 
-// Health check
-app.get("/", (req, res) => res.status(200).send("✅ Server running successfully!"));
+/* --------------- Health --------------- */
+app.get("/", (_req, res) => res.status(200).send("✅ Server running successfully!"));
 
-// 👉 Export the Express app as default — Vercel uses it as the handler
+/* --------------- Global error handler (adds CORS on 500s) --------------- */
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res
+    .status(500)
+    .set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    })
+    .json({ success: false, message: "Internal server error" });
+});
+
 export default app;
 
-// Local dev only
+/* --------------- Local dev only --------------- */
 if (!process.env.VERCEL) {
   const port = process.env.PORT || 4000;
   app.listen(port, () => console.log(`Local API on ${port}`));
